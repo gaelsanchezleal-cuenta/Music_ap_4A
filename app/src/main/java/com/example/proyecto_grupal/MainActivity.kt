@@ -1,6 +1,9 @@
 package com.example.proyecto_grupal
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -16,13 +19,16 @@ class MainActivity : AppCompatActivity() {
         //aqui inicia
 
         val tvTitulo = findViewById<TextView>(R.id.tvTitulo)
+        val etEmail = findViewById<EditText>(R.id.etEmail)
+        val etPassword = findViewById<EditText>(R.id.etPassword)
+        val btnIngresar = findViewById<Button>(R.id.btnIngresar)
+        val tvCrearCuenta = findViewById<TextView>(R.id.tvCrearCuenta)
 
+        tvCrearCuenta.setOnClickListener {
+            val intent = Intent(this, Registrar:: class.java)
+            startActivity(intent)
+        }
         //aqui termina
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
         }
     }
-}
