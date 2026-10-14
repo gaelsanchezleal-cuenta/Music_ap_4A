@@ -75,7 +75,7 @@ class Registrar : AppCompatActivity() {
             //finish lo que hace es devolvernos a la pantalla anterior
             finish()
         } else {
-            Toast.makeText(this, "Registro fallido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Registro fallido, correo duplicado", Toast.LENGTH_SHORT).show()
         }
     }
 
