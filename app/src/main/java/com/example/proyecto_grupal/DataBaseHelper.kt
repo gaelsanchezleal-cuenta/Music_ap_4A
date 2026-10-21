@@ -24,7 +24,7 @@ class DataBaseHelper(context: Context) : SQLiteOpenHelper(
         private const val COL_PASSWORD = "password"
     }
 
-    // 1. Metodo que se ejecuta al crear la Base de Datos por primera vez
+    // 1. Método que se ejecuta al crear la Base de Datos por primera vez
     override fun onCreate(db: SQLiteDatabase?) {
         val crearTablaUsuarios = """
             CREATE TABLE $TABLE_USUARIOS (
@@ -38,13 +38,13 @@ class DataBaseHelper(context: Context) : SQLiteOpenHelper(
         db?.execSQL(crearTablaUsuarios)
     }
 
-    // Metodo para actualizar la base de datos
+    // Método para actualizar la base de datos
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_USUARIOS")
         onCreate(db)
     }
 
-    // METODO PARA REGISTRAR
+    // MÉTODO PARA REGISTRAR
     fun registrarUsuario(nombre: String, correo: String, password: String): Boolean {
         // 1. Obtener la base de datos en modo escritura
         val db = writableDatabase
@@ -56,49 +56,35 @@ class DataBaseHelper(context: Context) : SQLiteOpenHelper(
             put(COL_PASSWORD, password)
         }
 
-        //aqui vienen los 1L o -1L
         val resultado = db.insert(TABLE_USUARIOS, null, datos)
 
-        db.close()
-
-        //comprara el valor del resultado de la insersion y regresarlo como boolean
         // Verificamos con un if convencional
         if (resultado == -1L) {
-            return false // Falló el registro (por ejemplo, correo duplicado)
+            return false // Falló el registro
         } else {
             return true  // Se registró con éxito
         }
+    } // <-- AQUÍ CIERRA registrarUsuario
 
-        // METODO PPARA CONSULTAR A UN USARIO
-        fun iniciarSesion(correo: String, password: String): Boolean {
+    // METODO PAlRA CONSULTAR A UN USUARIO (INICIAR SESIÓN)
+    fun iniciarSesion(correo: String, password: String): Boolean {
+        // readableDatabase se ocupa para leer en la base de datos
+        val db = readableDatabase
 
-            //readableDatabase se ocupa para leer en la base de datos
-            val db = readableDatabase
+        val query_sql = """
+            SELECT * FROM $TABLE_USUARIOS
+            WHERE $COL_CORREO = ? AND $COL_PASSWORD = ?
+        """.trimIndent()
 
-            val query_sql = """
-                SELECT * FROM $TABLE_USUARIOS
-                
-                WHERE $COL_CORREO = ? AND $COL_PASSWORD = ?
-            """.trimIndent()
+        // rawQuery le pasa la información de los parámetros
+        val cursor = db.rawQuery(query_sql, arrayOf(correo, password))
 
-            // CREAR CURSOR PARA RECORRER LA INFORMACION
+        // Si encontró al menos 1 registro (count > 0), el usuario existe
+        val usuarioEncontrado = cursor.count > 0
 
-            //rawquery le pasa la informacion (los parametros)
-            //el cursor devolvera la cantidad de registros que encontro
-            val cursor = db.rawQuery(
-                query_sql, arrayOf(correo, password)
-            )
+        // Cerramos el cursor para liberar recursos
+        cursor.close()
 
-            //crear variable que convierte el cursor a boolean
-            val usuarioEncontrar = cursor.count > 0
-
-            //cerramos para evitar complicaciones
-            cursor.close()
-            db.close()
-
-            //retornamos lo que nos dio el convirtor
-            return  usuarioEncontrar
-        }
-
-    }
+        return usuarioEncontrado
+    } // <-- AQUÍ CIERRA iniciarSesion
 }
