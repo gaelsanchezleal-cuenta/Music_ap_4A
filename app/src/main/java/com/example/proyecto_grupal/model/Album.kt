@@ -25,10 +25,10 @@ data class Album(
     val currency: String?
 ){
 
-    //metodo para obtener la imagen en grande
+    //metodo para obtener la imagen con mejor resolucion
 
     fun obtenerImagenGrande(): String{
-        return artworkUrl100?.replace("100*100bb.jpg", "250*250bb.jpg")?: ""
+        return artworkUrl100?.replace("100x100", "1000x1000")?: ""
     }
 
 }
