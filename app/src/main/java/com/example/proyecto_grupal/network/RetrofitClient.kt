@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 //archivo para contruir todo el enlace la api
 
-object RetrrofitClient {
+object RetrofitClient {
 
     //colocar la base URL
     private const val BASE_URL = "https://itunes.apple.com"
