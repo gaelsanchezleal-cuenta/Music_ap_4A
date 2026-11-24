@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.example.proyecto_grupal.model.AlbumF
 
 class DataBaseHelper(context: Context) : SQLiteOpenHelper(
     context,
@@ -152,5 +153,46 @@ class DataBaseHelper(context: Context) : SQLiteOpenHelper(
         cursor.close()
         db.close()
         return existe
+    }
+
+    // Metodo para acceder a la tabla de favoritos
+    fun obtenerAlbumFavoritos(): List<AlbumF> {
+        val listaFavoritos = mutableListOf<AlbumF>()
+        val db = readableDatabase
+
+        val querySql = """
+            SELECT
+            $COL_ALBUM_ID,
+            $COL_NOMBRE_ALBUM,
+            $COL_ARTISTA,
+            $COL_GENERO,
+            $COL_CANCIONES,
+            $COL_FECHA,
+            $COL_IMAGEN
+            FROM $TABLE_FAVORITOS
+            ORDER BY $COL_FAVORITO DESC
+        """.trimIndent()
+
+        val cursor = db.rawQuery(querySql, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val album = AlbumF(
+                    albumId = cursor.getLong(0),
+                    nombreAlbum = cursor.getString(1) ?: "Album desconocido",
+                    artista = cursor.getString(2) ?: "Artista desconocido",
+                    genero = cursor.getString(3) ?: "Genero desconocido",
+                    canciones = cursor.getInt(4),
+                    fecha = cursor.getString(5) ?: "Sin fecha",
+                    imagen = cursor.getString(6) ?: ""
+                )
+                listaFavoritos.add(album)
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+
+        return listaFavoritos
     }
 }
