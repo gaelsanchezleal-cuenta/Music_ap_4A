@@ -19,6 +19,7 @@ class Album_DetailActivity : AppCompatActivity() {
     private lateinit var tvDetallesInfoAlbum: TextView
     private lateinit var btnFavorito: ImageButton
 
+    private lateinit var dbHelper: DataBaseHelper
     private var albumFavorito = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +27,8 @@ class Album_DetailActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_album_detail)
 
-        // Asignacion de vistas con los IDs actualizados del XML
+        dbHelper = DataBaseHelper(this)
+
         imgPortadaDetalle = findViewById(R.id.imgPortadaDetalle)
         tvNombreAlbumDetalle = findViewById(R.id.tvNombreAlbumDetalle)
         tvArtistaAlbum = findViewById(R.id.tvArtistaAlbumDetalle)
@@ -49,31 +51,60 @@ class Album_DetailActivity : AppCompatActivity() {
         val genero = intent.getStringExtra("GENERO_ALBUM") ?: "Sin genero"
         val numeroCanciones = intent.getIntExtra("CANCIONES_ALBUM", 0)
         val fecha = intent.getStringExtra("FECHA_ALBUM") ?: "Sin fecha"
-        val imagen = intent.getStringExtra("IMAGEN_ALBUM")
+        val imagen = intent.getStringExtra("IMAGEN_ALBUM") ?: ""
 
-        // Formatear anio si la fecha viene en ISO (ej: 2023-05-12T07:00:00Z -> 2023)
         val anio = if (fecha.length >= 4) fecha.substring(0, 4) else fecha
 
-        // Asignar textos a cada TextView
         tvNombreAlbumDetalle.text = nombreAlbum
         tvArtistaAlbum.text = artista
         tvDetallesInfoAlbum.text = "Genero: $genero • $numeroCanciones canciones • año $anio"
 
-        // Cargar portada con Glide
         Glide.with(this)
             .load(imagen)
             .centerCrop()
             .into(imgPortadaDetalle)
 
-        // Logica para alternar favorito
-        btnFavorito.setOnClickListener {
-            albumFavorito = !albumFavorito
+        // Validacion para verificar si el album ya es favorito en la BD y actualizar el icono
+        if (idAlbum != -1L) {
+            albumFavorito = dbHelper.existeAlbumFavorito(idAlbum)
             if (albumFavorito) {
                 btnFavorito.setImageResource(R.drawable.baseline_favorite_24)
-                Toast.makeText(this, "Album $nombreAlbum agregado a favoritos", Toast.LENGTH_SHORT).show()
             } else {
                 btnFavorito.setImageResource(R.drawable.baseline_favorite_border_24)
-                Toast.makeText(this, "Album $nombreAlbum eliminado de favoritos", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnFavorito.setOnClickListener {
+            if (albumFavorito) {
+                val eliminado = dbHelper.eliminarAlbumFavorito(idAlbum)
+                if (eliminado) {
+                    albumFavorito = false
+                    btnFavorito.setImageResource(R.drawable.baseline_favorite_border_24)
+                    Toast.makeText(
+                        this,
+                        "Album $nombreAlbum eliminado de favoritos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                val guardado = dbHelper.guardarAlbumFavorito(
+                    albumId = idAlbum,
+                    nombreAlbum = nombreAlbum,
+                    artista = artista,
+                    genero = genero,
+                    canciones = numeroCanciones,
+                    fecha = fecha,
+                    imagen = imagen
+                )
+                if (guardado) {
+                    albumFavorito = true
+                    btnFavorito.setImageResource(R.drawable.baseline_favorite_24)
+                    Toast.makeText(
+                        this,
+                        "Album $nombreAlbum agregado a favoritos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
